@@ -3,7 +3,8 @@ import Flutter
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-    private let CHANNEL = "com.example.destination_app/navigate"
+
+    private var deepLinkApi: MessageFlutterApi?
 
     override func application(
         _ application: UIApplication,
@@ -12,9 +13,23 @@ import Flutter
     ) -> Bool {
         let message = url.queryParameters?["message"] ?? "No message received"
 
-        let controller = window?.rootViewController as! FlutterViewController
-        let methodChannel = FlutterMethodChannel(name: CHANNEL, binaryMessenger: controller.binaryMessenger)
-        methodChannel.invokeMethod("passMessage", arguments: message)
+        guard let controller = window?.rootViewController as? FlutterViewController else {
+            return super.application(application, open: url, options: options)
+        }
+
+        if deepLinkApi == nil {
+            deepLinkApi = MessageFlutterApi(binaryMessenger: controller.binaryMessenger)
+        }
+
+        // Use the correct argument label 'aString'
+        deepLinkApi?.flutterMethod(aString: message, completion: { result in
+            switch result {
+            case .success:
+                print("Message sent successfully")
+            case .failure(let error):
+                print("Failed to send message: \(error.localizedDescription)")
+            }
+        })
 
         return super.application(application, open: url, options: options)
     }

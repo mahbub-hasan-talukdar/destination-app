@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'src/messages.g.dart'; // Import the generated Pigeon file
 
 void main() {
   runApp(DestinationApp());
@@ -20,38 +20,34 @@ class DestinationHomePage extends StatefulWidget {
   _DestinationHomePageState createState() => _DestinationHomePageState();
 }
 
-class _DestinationHomePageState extends State<DestinationHomePage> {
-  static const platform = MethodChannel('com.example.destination_app/navigate');
-  String _receivedMessage =
-      "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg";
+class _DestinationHomePageState extends State<DestinationHomePage>
+    implements MessageFlutterApi {
+  String _imageUrl = "https://picsum.photos/200/300?grayscale";
 
   @override
   void initState() {
     super.initState();
-    _getDeepLinkMessage();
+
+    MessageFlutterApi.setUp(this);
   }
 
   @override
   Widget build(BuildContext context) {
-    print(_receivedMessage);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Destination App"),
+        title: const Text("Destination App"),
       ),
       body: Center(
-          // child: Text("Received Message: $_receivedMessage"),
-          child: Image.network(_receivedMessage)),
+        child: Image.network(_imageUrl),
+      ),
     );
   }
 
-  Future<void> _getDeepLinkMessage() async {
-    platform.setMethodCallHandler((call) async {
-      if (call.method == "passMessage") {
-        final message = call.arguments as String;
-        setState(() {
-          _receivedMessage = message;
-        });
-      }
+  @override
+  String flutterMethod(String? aString) {
+    setState(() {
+      _imageUrl = aString!;
     });
+    return '';
   }
 }
